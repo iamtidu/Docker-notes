@@ -1,3 +1,5 @@
+![image](https://github.com/user-attachments/assets/27e4848b-2a1d-4a2b-b654-f9c86f4ed54d)
+
 # Docker Learning Guide
 
 This guide covers Docker concepts from beginner to advanced levels, incorporating common commands and best practices.
@@ -19,6 +21,11 @@ Think of it like a shipping container for software. Just like a physical shippin
 * **Isolation:** Containers run in isolated environments, preventing conflicts between applications or dependencies.
 
 ### Docker vs. Virtual Machines (VMs)
+
+![image](https://github.com/user-attachments/assets/7eb9ebef-aa18-4088-ba03-14019af27360)
+![image](https://github.com/user-attachments/assets/dde40ea4-e106-488c-999a-a8c8e35de012)
+
+
 
 | Feature         | Docker Container             | Virtual Machine (VM)          |
 | :-------------- | :--------------------------- | :---------------------------- |
@@ -51,11 +58,20 @@ docker images
 This command lists your images, showing their repository name, tag, image ID, creation date, and size.
 
 ### Docker Containers
+
+![image](https://github.com/user-attachments/assets/72cf40cd-729c-4a9d-94d2-326eb756cc65)
+![image](https://github.com/user-attachments/assets/95429459-8b71-44fb-a23c-e36e7c68e2ea)
+
+
+
 A Docker container is a running instance of a Docker image. You can create, start, stop, move, or delete containers.
 
 - Runtime Instance: It's the live, running version of your application packaged in the image.
 - Isolated: Each container runs in its own isolated environment, with its own filesystem, networking, and process space, based on the image it was created from.
 - Ephemeral (by default): If you stop and remove a container, any changes made inside its filesystem (that aren't saved to a volume) are lost.
+
+![image](https://github.com/user-attachments/assets/65741a9a-e5a2-4c22-b773-69fe98ed0dd7)
+
 
 ### Running a Container:
 
@@ -111,6 +127,8 @@ ENV NAME World
 # Run app.py when the container launches
 CMD ["python", "app.py"]
 ```
+
+![image](https://github.com/user-attachments/assets/bfa80edb-0e41-4966-aeb6-d51c30a1ddf7)
 
 ### Basic Docker Commands (Your Examples Explained)
 Here's a breakdown of the commands you listed:
