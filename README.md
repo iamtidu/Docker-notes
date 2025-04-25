@@ -22,8 +22,9 @@ Think of it like a shipping container for software. Just like a physical shippin
 
 ### Docker vs. Virtual Machines (VMs)
 
-![image](https://github.com/user-attachments/assets/7eb9ebef-aa18-4088-ba03-14019af27360)
 ![image](https://github.com/user-attachments/assets/dde40ea4-e106-488c-999a-a8c8e35de012)
+![image](https://github.com/user-attachments/assets/7eb9ebef-aa18-4088-ba03-14019af27360)
+
 
 
 
