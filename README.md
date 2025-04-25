@@ -353,8 +353,12 @@ docker rmi oldname:tag
 ```
 
 - Technically, you're adding a new tag pointing to the same image ID. If you no longer need the old tag, you can remove it using `docker rmi`.
+  
 
 22. Use a Named Volume:
+
+![image](https://github.com/user-attachments/assets/3e6b9d36-9aa5-446a-b15c-8f911329dcf7)
+
 
 ```Bash
 
@@ -366,6 +370,9 @@ docker run -it --rm -v myvolume:/myapp <image id or name:tag>
 - `myvolume:/myapp:` This format creates a named volume called `myvolume` (if it doesn't exist) managed by Docker and mounts it inside the container at the path `/myapp`. This is the preferred way to persist data. Data written to `/myapp` will survive container removal.
 
 23. Use a Bind Mount:
+
+![image](https://github.com/user-attachments/assets/7af37b54-81eb-44b5-9d09-f3b6226600de)
+
 
 ```Bash
 
@@ -405,6 +412,9 @@ docker run -it --rm -v $(pwd)/config:/app/config <image id or name:tag>
 
 #### Example `docker-compose.yml`:
 
+![image](https://github.com/user-attachments/assets/47822d64-8613-4e6d-a684-1e188ea25c2d)
+
+
 ```YAML
 
 version: '3.8' # Specifies the Compose file version
@@ -423,6 +433,10 @@ services:
 ```
 
 ### Docker Networking
+
+![image](https://github.com/user-attachments/assets/c551da29-ce63-470b-8af4-bc4b6da37e60)
+![image](https://github.com/user-attachments/assets/b450c263-a718-4b2e-9364-9da11726b4fa)
+
 Docker containers need to communicate with each other and the outside world. Docker provides several networking drivers:
 
 - `bridge` (Default): Creates a private, internal network on the host. Containers on the same bridge network can communicate using their internal IP addresses. You need port mapping (`-p`) for external access. Containers on the default bridge network can only communicate via IP address; containers on user-defined bridge networks can resolve each other by name (recommended).
@@ -567,6 +581,10 @@ Docker is fundamental to modern CI/CD (Continuous Integration / Continuous Deplo
     4. Updates the running application (e.g., rolling update deployment) to use the new image.
 
 ### Advanced Networking Concepts
+
+
+
+
 
 - **Overlay Networks:** Enable communication between containers running on different hosts, essential for Swarm and Kubernetes. They create a virtual network layered on top of the host networks.
 
