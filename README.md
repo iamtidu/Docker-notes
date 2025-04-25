@@ -241,3 +241,343 @@ docker rm <NAMES or CONTAINER_ID> [<NAMES or CONTAINER_ID>...]
 docker run -d --rm -p 3000:3000 <IMAGE ID or name:tag>
 ```
 - The `--rm` flag is useful for temporary tasks. Docker automatically cleans up the container (removes its filesystem) when the container exits.
+13. Run Container with a Specific Name:
+
+```Bash
+
+# Run detached, auto-remove, assign a specific name "appname"
+docker run -d --rm --name "appname" -p 3000:3000 <IMAGE ID or name:tag>
+```
+- The `--name` flag assigns a specific, predictable name to the container, making it easier to reference (e.g., in docker stop appname). Names must be unique among all containers (running or stopped).
+14. Remove an Image:
+
+```Bash
+
+# Remove an image by its name and tag
+docker rmi myimage:01
+# OR remove by image ID
+docker rmi <IMAGE ID>
+```
+- Removes an image from your local storage. You cannot remove an image if it's currently being used by any container (even stopped ones). You need to remove the dependent containers first (`docker rm ...`).
+
+15. Run from Docker Hub:
+
+```Bash
+
+# Pull (if not present) and run the official Python image (latest tag)
+docker run python:latest
+# Pull (if not present) and run Nginx, mapping host port 8080 to container 80
+docker run -d -p 8080:80 nginx:latest
+```
+
+- If the image `name:tag` is not found locally, Docker automatically tries to download ("pull") it from the default registry, Docker Hub.
+
+16. Run Container Interactively:
+
+```Bash
+
+# Run interactively, allocating a pseudo-TTY
+docker run -it <IMAGE ID or name:tag> /bin/bash
+```
+
+- `-i` (interactive): Keeps STDIN open even if not attached.
+- `-t` (tty): Allocates a pseudo-terminal.
+Combining `-it` is common for getting a shell (`/bin/bash`, `/bin/sh`, etc.) inside a running container for debugging or exploration.
+
+17. Log in to a Registry:
+
+```Bash
+
+docker login
+# You might specify a registry server: docker login registry.example.com
+```
+- Logs you into a Docker registry (Docker Hub by default) using your credentials. Required before you can push images.
+
+18. Tag an Image for Docker Hub:
+
+```Bash
+
+# Tag the image 'myimage:01' with your Docker Hub username and repo name
+docker build -t yourusername/reponame:01 .
+# OR if the image already exists locally:
+docker tag myimage:01 yourusername/reponame:01
+```
+
+- Before pushing to Docker Hub, an image needs to be tagged in the format `your_dockerhub_username/repository_name:tag`. The `docker tag` command creates an alias (another tag) for an existing image ID; it doesn't duplicate the image data.
+
+19. Push an Image to Docker Hub:
+
+```Bash
+
+# Push the tagged image to Docker Hub (must be logged in)
+docker push yourusername/reponame:01
+```
+
+- Uploads your tagged image to the specified repository on Docker Hub (or another registry if specified in the name).
+
+20. Pull an Image from Docker Hub:
+
+```Bash
+
+# Download an image without running it
+docker pull yourusername/reponame:01
+```
+- Downloads an image from a registry to your local machine.
+
+21. Rename an Image (using Tag):
+
+```Bash
+
+# Give the image currently tagged 'oldname:tag' a new tag 'newname:tag'
+docker tag oldname:tag newname:tag
+# You can then remove the old tag if desired
+docker rmi oldname:tag
+```
+
+- Technically, you're adding a new tag pointing to the same image ID. If you no longer need the old tag, you can remove it using `docker rmi`.
+
+22. Use a Named Volume:
+
+```Bash
+
+# Run interactively, remove on exit, create/use volume 'myvolume' mounted at /myapp
+docker run -it --rm -v myvolume:/myapp <image id or name:tag>
+```
+
+- The -v flag mounts a volume.
+- `myvolume:/myapp:` This format creates a named volume called `myvolume` (if it doesn't exist) managed by Docker and mounts it inside the container at the path `/myapp`. This is the preferred way to persist data. Data written to `/myapp` will survive container removal.
+
+23. Use a Bind Mount:
+
+```Bash
+
+# Run interactively, remove on exit, mount host file 'relative_path/server.txt' to '/myapp/server.txt'
+# Note: Using $(pwd) makes the host path absolute, which is generally safer.
+docker run -it --rm -v $(pwd)/relative_path/server.txt:/myapp/server.txt <image id or name:tag>
+# Or mount a directory:
+docker run -it --rm -v $(pwd)/config:/app/config <image id or name:tag>
+```
+
+- `-v host_path:container_path:` This format creates a bind mount. It directly mounts a file or directory from your host machine into the container.
+
+- `$(pwd)` ensures the host path is absolute, which is generally safer. `relative_path` is relative to your current working directory on the host.
+
+- Useful for development (editing code on the host and seeing changes live in the container) or providing configuration files. Be cautious with permissions.
+
+
+### Docker Hub and Registries
+- `Docker Hub:` The default, public registry for Docker images. It hosts thousands of official images (like `python, nginx, ubuntu`) and images shared by users and organizations.
+- `Registry:` A storage and distribution system for Docker images. You can host your own private registry or use cloud provider offerings (e.g., AWS ECR, Google GCR, Azure ACR) for better control, security, and performance.
+- `Repository:` A collection of related Docker images within a registry, usually different versions (tags) of the same application (e.g., the `python` repository on Docker Hub contains tags like `3.9, 3.10, latest, slim`).
+
+## Intermediate Topics
+
+### Docker Compose
+
+- `Purpose:` A tool for defining and running multi-container Docker applications.
+- `How:` Uses a YAML file (`docker-compose.yml` by default) to configure the application's services, networks, and volumes.
+- `Benefits:` Simplifies the management of applications with multiple components (e.g., a web server, database, caching layer). Define everything in one file and manage the entire stack with simple commands.
+- `Key Commands:`
+  - `docker-compose up:` Builds (if necessary), creates, starts, and attaches to containers for a service. Add `-d` to run in detached mode.
+  - `docker-compose down:` Stops and removes containers, networks, and optionally volumes (-v).
+  - `docker-compose ps:` Lists containers managed by Compose.
+  - `docker-compose logs:` View logs from services.
+  - `docker-compose build:` Builds or rebuilds services.
+  - `docker-compose exec <service_name> <command>:` Execute a command in a running service container.
+
+#### Example `docker-compose.yml`:
+
+```YAML
+
+version: '3.8' # Specifies the Compose file version
+
+services:
+  web:
+    build: . # Build image from Dockerfile in current directory
+    ports:
+      - "8000:5000" # Map host port 8000 to container port 5000
+    volumes:
+      - .:/code # Bind mount current directory to /code in container
+    depends_on:
+      - redis # Wait for 'redis' service to start before starting 'web'
+  redis:
+    image: "redis:alpine" # Use official Redis image
+```
+
+### Docker Networking
+Docker containers need to communicate with each other and the outside world. Docker provides several networking drivers:
+
+- `bridge` (Default): Creates a private, internal network on the host. Containers on the same bridge network can communicate using their internal IP addresses. You need port mapping (`-p`) for external access. Containers on the default bridge network can only communicate via IP address; containers on user-defined bridge networks can resolve each other by name (recommended).
+- `host:` The container shares the host's network stack. No isolation. The container's network configuration is identical to the host. Avoid unless necessary.
+- `none:` The container gets its own network stack but isn't configured. It has a loopback device but no external network interface. Useful for batch jobs or containers that don't need network access.
+- `overlay:` Used for multi-host networking, primarily with Docker Swarm or Kubernetes. Allows containers on different Docker hosts to communicate directly.
+- `macvlan:` Allows assigning a MAC address to a container, making it appear as a physical device on your network.
+<br>
+
+**Best Practice:** Create user-defined bridge networks for your applications (e.g., using Docker Compose automatically does this) to enable DNS resolution between containers and provide better isolation than the default bridge.
+
+### Docker Volumes
+Containers are often ephemeral, but applications need to persist data (databases, user uploads, configuration). Volumes are the preferred mechanism:
+
+- **Named Volumes:**
+  - Created and managed by Docker (`docker volume create ...`, or automatically via `docker run -v volume_name:/path` or Docker Compose).
+  - Stored in a dedicated area on the host filesystem managed by Docker (`/var/lib/docker/volumes/` on Linux).
+  - Independent of container lifecycle: survive container stop/removal.
+  - Platform-agnostic and easier to back up or migrate.
+  - Command: `docker run -v mydata:/app/data ...`
+
+- **Bind Mounts:**
+  - Map a directory or file from the host machine directly into the container.
+  - Host path must exist.
+  - Useful for development (sharing source code) or providing config files from the host.
+  -Relies on the host's directory structure and permissions; less portable.
+  -**Command:** docker run `-v /path/on/host:/path/in/container ... or docker run -v $(pwd)/config:/app/config ...`
+
+- **tmpfs Mounts (Linux Only):**
+- Stored only in the host's memory. Very fast but non-persistent (data lost when container stops). Useful for temporary sensitive data.
+
+### Multi-Stage Builds
+- **Purpose:** Create smaller, more secure production images by separating build-time dependencies from runtime dependencies.
+- **How:** Use multiple `FROM` instructions in a single Dockerfile. Each FROM starts a new build stage. You can copy artifacts (like compiled binaries or built static assets) from earlier stages into later stages using `COPY --from=<stage_name_or_number> ....`
+- **Benefit:** The final image only contains the necessary runtime components, excluding compilers, build tools, source code, etc., making it smaller and reducing the attack surface.
+
+#### Example Multi-Stage Dockerfile (Go App):
+
+```Dockerfile
+
+# Stage 1: Build the application
+FROM golang:1.19 AS builder
+WORKDIR /src
+COPY . .
+RUN CGO_ENABLED=0 go build -o /app .
+
+# Stage 2: Create the final, minimal image
+FROM alpine:latest
+WORKDIR /root/
+COPY --from=builder /app .
+CMD ["./app"]
+```
+
+The final image is based on `alpine` and only contains the compiled `/app` binary copied from the builder stage. The `golang` image and source code are discarded.
+
+### Containerization of Different Applications
+
+- **Stateless Web Apps:** Relatively easy. Package code and dependencies. Use environment variables or config files mounted via volumes/bind mounts for configuration. Scale horizontally by running multiple containers.
+
+- **Databases:** More complex due to state. Always use named volumes to persist database files outside the container. Consider running official database images. Handle backups, replication, and clustering carefully. For production, managed database services are often preferred over self-hosted in containers.
+
+- **Microservices:** Docker and Compose/Orchestrators excel here. Each service runs in its own container(s), communicating over defined networks.
+- **Compiled Applications (Go, C++, Java):** Use multi-stage builds to create small runtime images.
+I
+- **nterpreted Languages (Python, Node.js, Ruby):** Ensure the correct runtime and dependencies are in the image. Pay attention to optimizing installs (e.g., `pip install --no-cache-dir`).
+
+### Dockerfile Best Practices
+
+- **Use Official Images:** Start `FROM` trusted, minimal official images where possible.
+- **Minimize Layers:** Combine related `RUN` commands using `&&` to reduce the number of layers (though multi-stage builds often mitigate this need).
+- **Use** `.dockerignore`: Exclude unnecessary files/directories (like `.git`, `node_modules`, logs, local secrets) from the build context to speed up builds and reduce image size.
+- **Leverage Build Cache:** Order instructions from least frequently changing (e.g., `FROM`, installing dependencies) to most frequently changing (e.g., `COPY source_code`).
+- **Run as Non-Root User:** Create a dedicated user/group in the Dockerfile (`RUN groupadd... && useradd...`) and use the `USER` instruction to switch to it. Enhances security.
+- **Keep Images Small:** Use multi-stage builds, uninstall build dependencies, use smaller base images (e.g., `alpine` or `slim` variants).
+- **Be Explicit:** Prefer `COPY` over `ADD`. Specify exact versions for base images and packages.
+- **Use `CMD` or `ENTRYPOINT` appropriately:** CMD for default command/args (easily overridden), `ENTRYPOINT` for the main executable (args passed via `docker run` are appended).
+
+## Advanced Topics
+
+### Container Orchestration
+- **Problem:** Managing containers manually becomes difficult at scale (hundreds or thousands of containers across many hosts).
+- **Solution:** Container orchestrators automate the deployment, scaling, networking, load balancing, and management of containerized applications.
+- **Key Features:** Scheduling containers onto hosts, service discovery, load balancing, health checks, rolling updates, secrets management, configuration management.
+- **Major Tools:** Kubernetes (most popular), Docker Swarm (simpler, built into Docker).
+
+### Docker Swarm
+- Docker's native clustering and orchestration solution.
+- **Concepts:**
+
+    - **Swarm Mode:** Enabled via `docker swarm init` (manager) and `docker swarm join` (workers).
+    - **Nodes:** Docker engines participating in the swarm (Managers control, Workers execute).
+    - **Services:** Define the desired state of containers (image, replicas, ports, networks, etc.). Swarm ensures the actual state matches the desired state.
+    - **Tasks:** Individual containers running as part of a service.
+- **Pros:** Simpler to set up and use than Kubernetes if you're already familiar with Docker. Integrated directly into the Docker CLI.
+- **Cons:** Less feature-rich and smaller community/ecosystem compared to Kubernetes.
+
+### Kubernetes (Introduction)
+- An open-source container orchestration platform, originally developed by Google. The de facto standard.
+- **Core Concepts:**
+    - **Cluster:** A set of nodes (VMs or physical machines) running containerized applications. Has a Control Plane (managing the cluster) and Worker Nodes (running pods).
+    - **Pod:** The smallest deployable unit. Represents one or more tightly coupled containers sharing storage and network resources.
+    - **Service:** An abstraction defining a logical set of Pods and a policy to access them (often via a stable IP address and DNS name, with load balancing).
+    - **Deployment:** Manages stateless applications, defining the desired number of replicas (Pods) and handling rolling updates and rollbacks.
+    - **Namespace:** Virtual cluster isolation within a physical cluster.
+- **Pros:** Extremely powerful, flexible, large community, extensive ecosystem, cloud-provider support.
+- **Cons:** Steeper learning curve than Swarm. More complex to set up and manage.
+
+### Docker Security
+- **Image Security:** Use trusted base images, scan images for vulnerabilities (e.g., `docker scan`, Trivy, Snyk), use multi-stage builds, run as non-root.
+- **Container Security:** Limit capabilities (`--cap-drop`), apply resource limits (`--memory`, `--cpus`), use security profiles (AppArmor, Seccomp), ensure isolation, avoid privileged mode (`--privileged`).
+- **Daemon Security:** Secure the Docker daemon socket, use TLS for remote access, audit daemon activity.
+- **Secrets Management:** Don't hardcode secrets in images or environment variables. Use Docker secrets (Swarm), Kubernetes Secrets, or external tools like HashiCorp Vault.
+- **Registry Security:** Use private registries for sensitive images, implement access controls.
+
+### Monitoring and Logging
+- **Logging:**
+    - Containers typically log to `stdout` and `stderr`.
+    - `docker logs <container>`: Access logs directly.
+    - **Logging Drivers:** Configure Docker to send logs elsewhere (e.g., `json-file` (default), `journald`, `syslog`, `fluentd`, `splunk`). Centralized logging solutions (ELK Stack - Elasticsearch, Logstash, Kibana; or EFK - Elasticsearch, Fluentd, Kibana; Loki) are common.
+- **Monitoring:**
+    - `docker stats <container>`: Basic live resource usage (CPU, memory, network, I/O).
+    - **External Tools:** Prometheus (metrics collection) + Grafana (visualization) is a popular combination. cAdvisor (by Google) exports container metrics. Datadog, Dynatrace are commercial options. Monitor container health, resource usage, application-specific metrics.
+
+### CI/CD Integration
+
+Docker is fundamental to modern CI/CD (Continuous Integration / Continuous Deployment/Delivery) pipelines:
+
+- **CI Phase:**
+    1. Code is pushed to a repository (e.g., Git).
+    2. CI server (Jenkins, GitLab CI, GitHub Actions) triggers a build.
+    3. Build process often runs inside Docker containers.
+    4. Unit/Integration tests are run (potentially using Docker Compose to spin up dependencies).
+    5. A Docker image for the application is built (`docker build`).
+    6. The image is tagged (e.g., with git commit hash or version).
+    7. The image is pushed to a Docker registry.
+
+- **CD Phase:**
+
+    1. Deployment process is triggered (automatically or manually).
+    2. Deployment tool (Orchestrator CLI like `kubectl` or `docker stack deploy`, Helm, Argo CD) interacts with the target environment (Kubernetes, Swarm, VMs).
+    3. Pulls the new image from the registry.
+    4. Updates the running application (e.g., rolling update deployment) to use the new image.
+
+### Advanced Networking Concepts
+
+- **Overlay Networks:** Enable communication between containers running on different hosts, essential for Swarm and Kubernetes. They create a virtual network layered on top of the host networks.
+
+- **Macvlan Networks:** Assign unique MAC addresses to containers, allowing them to appear as physical devices on the host network. Useful for legacy applications or network monitoring that expects distinct devices.
+
+- **IPv6:** Docker supports IPv6 networking for containers.
+
+- **Service Discovery:** How containers find each other. Docker's embedded DNS server provides name resolution for containers on user-defined networks. Orchestrators provide more robust mechanisms (e.g., Kubernetes Services).
+
+- **Ingress Controllers (Kubernetes):** Manage external access to services in a cluster, typically handling HTTP/S routing, SSL termination, and load balancing.
+
+### Storage Drivers and Advanced Volume Management
+
+- **Storage Drivers:** Handle how image layers and container filesystems are managed (e.g., `overlay2` (default, recommended), `aufs`, `btrfs`, `zfs`). Choice can impact performance and stability depending on the host OS and filesystem. Usually, the default `overlay2` is fine.
+- **Volume Plugins:** Extend Docker's volume capabilities to integrate with external storage systems (NFS, Ceph, cloud provider block storage like EBS, Azure Disk). Allows volumes to be backed by more robust or specialized storage.
+
+### Troubleshooting and Debugging
+- **Check Container Logs:** `docker logs <container_name_or_id>`(add `-f` to follow). The first place to look.
+
+- **Get a Shell Inside:** `docker exec -it <container_name_or_id> /bin/bash` (or `sh`). Allows you to inspect the container's filesystem, running processes, and network configuration from within.
+
+- **Inspect Container/Image:** `docker inspect <container_or_image>` provides detailed low-level information (IP address, volumes, ports, environment variables, etc.) in JSON format.
+
+- **Check Resource Usage:** `docker stats <container_name_or_id>` for live CPU, memory, network I/O. Check if resource limits are being hit.
+
+- **Network Troubleshooting:** Use tools like `ping`, `curl`, `netstat`, `traceroute` inside the container (if available in the image or installed via `exec`) to test connectivity. Check `docker network inspect <network_name>`.
+
+- **Check Docker Daemon Logs:** Location varies by OS (e.g., via `journalctl -u docker.service` on systemd Linux). Can reveal issues with the Docker engine itself.
+
+- **Restart Docker Daemon:** Sometimes necessary if the daemon becomes unresponsive.
+<hr>
+This guide provides a solid foundation. The best way to learn Docker is by using it – build images, run containers, experiment with Compose, and explore the commands! Good luck!
