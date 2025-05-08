@@ -618,4 +618,4 @@ Docker is fundamental to modern CI/CD (Continuous Integration / Continuous Deplo
 - **Restart Docker Daemon:** Sometimes necessary if the daemon becomes unresponsive.
 <hr>
 This guide provides a solid foundation. The best way to learn Docker is by using it – build images, run containers, experiment with Compose, and explore the commands! Good luck!
-Bingo!!
+Bingo!! sir
